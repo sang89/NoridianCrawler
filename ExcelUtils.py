@@ -1,4 +1,3 @@
-from openpyxl import load_workbook
 import pandas as pd
 from PatientInfo import *
 from constants import *
@@ -6,8 +5,8 @@ from constants import *
 def get_query_info():
     df = pd.read_excel(SOURCE_FILE_PATH, sheet_name=SOURCE_SHEET_NAME)
     df = df.reindex()
-    df = df[['FIRST', 'LAST', 'MEDICARE #', 'DOB', 'From DOS', 'To DOS']]
-    df['Invalid'] = df.isna().any(axis=1)
+    df = df[['FIRST', 'LAST', 'MEDICARE #', 'DOB', 'From DOS', 'To DOS', 'Facesheet', 'Sent out']]
+    df['Invalid'] = df[['FIRST', 'LAST', 'MEDICARE #', 'DOB', 'From DOS', 'To DOS']].isna().any(axis=1)
     df['DOB'] = pd.to_datetime(df['DOB'] , dayfirst=True)
     df.loc[df['Invalid'] == False, 'DOB'] = df.loc[df['Invalid'] == False, 'DOB'].apply(
         lambda dob: dob.strftime('%m/%d/%Y'))

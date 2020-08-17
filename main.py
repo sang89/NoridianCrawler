@@ -7,6 +7,8 @@ from selenium.webdriver.support.wait import WebDriverWait
 from selenium.webdriver.common.keys import Keys
 from selenium.webdriver.common.desired_capabilities import DesiredCapabilities
 from selenium.webdriver.support import expected_conditions as EC
+from selenium.webdriver.chrome.options import Options
+from fake_useragent import UserAgent
 
 from openpyxl import load_workbook
 
@@ -15,7 +17,15 @@ from PatientInfo import *
 from ExcelUtils import *
 from constants import *
 
-driver = webdriver.Chrome('D:\ChromDriver\chromedriver.exe')
+options = Options()
+ua = UserAgent()
+userAgent = ua.random
+print(userAgent)
+options.add_argument('user-agent={userAgent}')
+options.add_experimental_option("useAutomationExtension", False)
+options.add_experimental_option("excludeSwitches",["enable-automation"])
+
+driver = webdriver.Chrome(options=options, executable_path='D:\ChromDriver\chromedriver.exe')
 url = driver.command_executor._url
 print(url)
 session_id = driver.session_id
@@ -26,11 +36,9 @@ class WebTable:
        self.path = webtable_path
 
     def get_row_count(self):
-        #return len(self.table.find_elements_by_tag_name("tr")) - 1
         return len(driver.find_elements_by_xpath(self.path + "/tbody/tr"))
 
     def get_column_count(self):
-        #return len(self.table.find_elements_by_xpath("//tbody/tr[1]/td"))
         return len(driver.find_elements_by_xpath(self.path + '/tbody/tr[1]/td'))
 
     def get_table_size(self):
@@ -93,7 +101,6 @@ class WebTable:
         if (row_number == 0):
             raise Exception("Row number starts from 1")
 
-        #row_number = row_number+1
         cellData = driver.find_element_by_xpath(self.path + "//tbody/tr["+str(row_number)+"]/td["+str(column_number)+"]").text
         return cellData
 
@@ -155,7 +162,6 @@ def enter_info(patient_info):
     print('First name: ', first_name)
     print('Last name: ', last_name)
 
-    #alert = driver.find_element_by_xpath('//*[@id="p_p_id_claimstatus_WAR_NMPFrontendportlet_"]/div/div/div[1]/div')
     try:
         alert = WebDriverWait(driver, 10).until(EC.presence_of_element_located(
             (By.XPATH, '//*[@id="p_p_id_claimstatus_WAR_NMPFrontendportlet_"]/div/div/div[1]/div')))
@@ -304,8 +310,8 @@ def main():
 
 
 driver.get('https://www.noridianmedicareportal.com/web/nmp/home')
-driver = webdriver.Remote(command_executor='http://127.0.0.1:63442',desired_capabilities={})
+driver = webdriver.Remote(command_executor='http://127.0.0.1:51584',desired_capabilities={})
 driver.close()   # this prevents the dummy browser
-driver.session_id = 'a10c0f066206b33eede9a3c1b9c1132d'
+driver.session_id = 'd43c8fbddca37f2943979029b4a48641'
 main()
 
