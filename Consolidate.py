@@ -15,7 +15,13 @@ def coloring_invalid(s):
 
 def change_date_format(s):
     if isinstance(s, str):
-        return convert_to_datetime_obj(s).strftime('%m/%d/%Y')
+        try:
+            stripped_str = s.strip()
+            result = convert_to_datetime_obj(stripped_str).strftime('%m/%d/%Y')
+            return result
+        except:
+            print('Convert invalid date to empty string:', s)
+            return ''
     else:
         return s.strftime('%m/%d/%Y')
 
@@ -38,6 +44,7 @@ def consolidate():
 
     # Sort the table
     #merge_df = merge_df.sort_values(by=['MEDICARE #', 'count'])
+    merge_df = merge_df.sort_values(by=['LAST', 'FIRST', 'count'])
 
     merge_df.loc[merge_df['count'] >= 0, 'FIRST'] = merge_df.loc[merge_df['count'] > 0, 'FIRST'].apply(lambda elem : '')
     merge_df.loc[merge_df['count'] >= 0, 'LAST'] = merge_df.loc[merge_df['count'] > 0, 'LAST'].apply(lambda elem : '')
@@ -51,6 +58,8 @@ def consolidate():
 
     # Sort the table
     merge_df = merge_df.sort_values(by=['MEDICARE #', 'count', 'From DOS', 'To DOS'])
+    #merge_df = merge_df.sort_values(by=['MEDICARE #', 'count', 'From DOS', 'To DOS'])
+
     merge_df.loc[merge_df['count'] >= 0, 'MEDICARE #'] = merge_df.loc[merge_df['count'] > 0, 'MEDICARE #'].apply(
         lambda elem: '')
 
@@ -61,11 +70,11 @@ def consolidate():
     # Clean the invalid data frame
     invalid_source_df = invalid_source_df.applymap(lambda el: '' if pd.isna(el) or el=='nan' else el)
     invalid_source_df['From DOS'] = invalid_source_df['From DOS'].apply(
-        lambda dos: '' if pd.isna(dos) or dos=='' else dos.strftime('%m/%d/%Y'))
+        lambda dos: '' if pd.isna(dos) or dos=='' else change_date_format(dos))
     invalid_source_df['To DOS'] = invalid_source_df['To DOS'].apply(
-        lambda dos: '' if pd.isna(dos) or dos=='' else dos.strftime('%m/%d/%Y'))
+        lambda dos: '' if pd.isna(dos) or dos=='' else change_date_format(dos))
     invalid_source_df['DOB'] = invalid_source_df['DOB'].apply(
-        lambda dob: '' if pd.isna(dob) or dob=='' else dob.strftime('%m/%d/%Y'))
+        lambda dob: '' if pd.isna(dob) or dob=='' else change_date_format(dob))
 
     # Concat the invalid at the end
     merge_df = pd.concat([merge_df, invalid_source_df], axis=0, ignore_index=True)

@@ -101,7 +101,7 @@ class WebTable:
         if (row_number == 0):
             raise Exception("Row number starts from 1")
 
-        cellData = driver.find_element_by_xpath(self.path + "//tbody/tr["+str(row_number)+"]/td["+str(column_number)+"]").text
+        cellData = driver.find_element_by_xpath(self.path + "/tbody/tr["+str(row_number)+"]/td["+str(column_number)+"]").text
         return cellData
 
 def signInToNoridian():
@@ -308,10 +308,10 @@ def main():
             df.to_excel(writer, sheet_name=MAIN_SHEET_NAME, header=None, startrow=book[MAIN_SHEET_NAME].max_row)
             writer.save()
 
-
-driver.get('https://www.noridianmedicareportal.com/web/nmp/home')
-driver = webdriver.Remote(command_executor='http://127.0.0.1:51584',desired_capabilities={})
-driver.close()   # this prevents the dummy browser
-driver.session_id = 'd43c8fbddca37f2943979029b4a48641'
-main()
+if __name__ == '__main__':
+    driver.get('https://www.noridianmedicareportal.com/web/nmp/home')
+    driver = webdriver.Remote(command_executor='http://127.0.0.1:51584',desired_capabilities={})
+    driver.close()   # this prevents the dummy browser
+    driver.session_id = 'd43c8fbddca37f2943979029b4a48641'
+    main()
 
