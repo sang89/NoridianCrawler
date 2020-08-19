@@ -1,4 +1,4 @@
-from datetime import datetime
+from datetime import datetime, timedelta
 
 
 def convert_to_datetime_obj(date_time_str):
@@ -65,4 +65,79 @@ def create_name_combinations(first_name, last_name):
         result.append([first_name, last_name_split[0]])
         result.append([first_name + ' ' + last_name_split[1], last_name_split[0]])
         result.append([last_name_split[0], first_name + ' ' + last_name_split[1]])
+    return result
+
+
+def get_dates_between(start_date, end_date):
+    delta = end_date - start_date  # as timedelta
+    result = []
+    for i in range(delta.days + 1):
+        day = start_date + timedelta(days=i)
+        result.append(day)
+    return result
+
+
+def check_if_service_dates_in_range(service_dates, start_date, end_date):
+    # first list of the dates in range
+    date_range = get_dates_between(start_date, end_date)
+
+    result_indices = []
+    source_mask = dict()
+    for i in range(len(date_range)):
+        source_mask[date_range[i]] = 0
+
+    discrepancy = []
+    for i in range(len(service_dates)):
+        from_dos = service_dates[i][0]
+        to_dos = service_dates[i][1]
+        cur_range = get_dates_between(from_dos, to_dos)
+        for cur_date in cur_range:
+            if check_if_date_in_range(cur_date.strftime('%m/%d/%Y'), start_date.strftime('%m/%d/%Y'),
+                                      end_date.strftime('%m/%d/%Y')):
+                source_mask[cur_date] = 1
+            elif cur_date not in discrepancy:
+                discrepancy.append(cur_date)
+                if i not in result_indices:
+                    result_indices.append(i)
+    missing_dates = []
+    for i in range(len(date_range)):
+        cur_date = date_range[i]
+        if source_mask[cur_date] == 0:
+            missing_dates.append(cur_date)
+
+    missing_dates = parse_date_ranges(missing_dates)
+    discrepancy = parse_date_ranges(discrepancy)
+
+    return result_indices, missing_dates, discrepancy
+
+
+def parse_date_ranges_into_list(dates):
+    def group_consecutive(dates):
+        dates_iter = iter(sorted(set(dates)))  # de-dup and sort
+
+        run = [next(dates_iter)]
+        for d in dates_iter:
+            if (d.toordinal() - run[-1].toordinal()) == 1:  # consecutive?
+                run.append(d)
+            else:  # [start, end] of range else singleton
+                yield [run[0], run[-1]] if len(run) > 1 else run[0]
+                run = [d]
+        yield [run[0], run[-1]] if len(run) > 1 else [run[0]]
+
+    return list(group_consecutive(dates)) if dates else []
+
+def parse_date_ranges(dates):
+    result = []
+    result_list = parse_date_ranges_into_list(dates)
+    for i in range(len(result_list)):
+        if len(result_list[i]) == 2:
+            start_date = result_list[i][0]
+            end_date = result_list[i][1]
+            formatted_date = start_date.strftime('%m/%d/%Y') + ' - ' + end_date.strftime('%m/%d/%Y')
+            result.append(formatted_date)
+        else: # == 1
+            date = result_list[i][0]
+            formatted_date = date.strftime('%m/%d/%Y')
+            result.append(formatted_date)
+    result = '\n '.join(str(elem) for elem in result)
     return result
